@@ -1,11 +1,15 @@
 <template>
-  <div class="fixed bottom-8 right-8">
+  <div class="fixed bottom-12 right-12">
+    <div
+      class="absolute -z-10 bg-[#D6EDFF] animate-grow-glow w-12 h-12 border rounded-full"
+    ></div>
     <button
       @click="toggleChat"
-      class="bg-blue-500 hover:bg-blue-600 text-white rounded-full p-3 shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-300"
+      class="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-300"
       :class="{ 'rotate-180': isChatOpen }"
     >
-      <MessageSquare v-if="!isChatOpen" class="w-6 h-6" />
+      <!-- <MessageSquare  class="w-6 h-6" /> -->
+      <img class="w-6 h-6" v-if="!isChatOpen" src="/logo.svg" alt="" />
       <X v-else class="w-6 h-6" />
     </button>
 
@@ -19,20 +23,61 @@
     >
       <div
         v-if="isChatOpen"
-        class="absolute border bottom-16 right-0 w-80 h-[450px] bg-white rounded-[15px] shadow-xl overflow-hidden"
+        class="border bottom-16 right-0 w-[400px] h-[500px] bg-white rounded-[15px] shadow-xl overflow-hidden"
+        :class="
+          isExpanded
+            ? 'fixed top-0 left-0 w-full h-full transition-200'
+            : 'absolute'
+        "
       >
         <div class="flex flex-col h-full">
-          <div class="bg-blue-500 text-white p-3">
-            <h2 class="text-lg font-semibold">Aisha AI</h2>
+          <div class="bg-blue-500 text-white p-3 flex justify-between">
+            <div>
+              <h2 class="text-lg font-semibold">Aisha AI</h2>
+              <p class="text-sm">( Chatbot test rejimida ishlamoqda )</p>
+            </div>
+            <button class="flex items-center" @click="toggleExpand">
+              <Expand v-if="!isExpanded" />
+              <svg
+                v-else
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                width="28"
+                height="28"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M5 9h4m0 0V5m0 4L4 4m15 5h-4m0 0V5m0 4 5-5M5 15h4m0 0v4m0-4-5 5m15-5h-4m0 0v4m0-4 5 5"
+                ></path>
+              </svg>
+            </button>
           </div>
           <div
             ref="messageContainer"
-            class="flex-1 overflow-y-auto p-3 space-y-4"
+            class="flex-1 overflow-y-auto p-2 space-y-2"
           >
-            <div v-for="message in messages" :key="message.id" class="flex">
+            <h1 class="text-center text-sm">
+              {{ new Date().toLocaleString().slice(0, 10) }}
+            </h1>
+            <div
+              v-for="message in messages"
+              :key="message.id"
+              class="flex items-end gap-1"
+            >
+              <img
+                v-if="!message.isUser"
+                src="/main-logo.svg"
+                alt="Main Logo"
+                class="w-7 h-7"
+              />
               <div
                 :class="[
-                  'max-w-2/3 px-2 py-1',
+                  'max-w-[70%] break-word-own overflow-hidden whitespace-pre-wrap px-2 py-1',
                   message.isUser
                     ? 'bg-[#1F93FF] text-white ml-auto rounded-t-[13px] rounded-bl-[13px]'
                     : 'bg-gray-100 rounded-t-[13px] rounded-br-[13px]',
@@ -74,9 +119,14 @@
 
 <script setup>
 import { ref, onMounted, nextTick } from "vue";
-import { MessageSquare, X } from "lucide-vue-next";
+import { MessageSquare, X, Expand } from "lucide-vue-next";
 
-const isChatOpen = ref(false);
+const toggleExpand = () => {
+  isExpanded.value = !isExpanded.value;
+};
+
+const isChatOpen = ref(true);
+const isExpanded = ref(false);
 const messages = ref([
   {
     id: 1,
@@ -203,5 +253,33 @@ onMounted(() => {
   66% {
     background-size: calc(100% / 3) 100%, calc(100% / 3) 100%, calc(100% / 3) 0%;
   }
+}
+
+@keyframes grow-glow {
+  0% {
+    transform: scale(1);
+    opacity: 0.75;
+  }
+  25% {
+    transform: scale(2);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(3);
+    opacity: 0.25;
+  }
+  100% {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+.animate-grow-glow {
+  animation: grow-glow 2.5s infinite;
+  animation-timing-function: linear;
+}
+
+.break-word-own {
+  word-break: break-all;
 }
 </style>
