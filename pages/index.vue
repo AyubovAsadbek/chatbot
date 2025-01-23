@@ -86,7 +86,8 @@
                 <span class="text-sm">{{ message.content }}</span>
               </div>
             </div>
-            <div v-if="isLoading" class="flex">
+            <div v-if="isLoading" class="flex items-end gap-1">
+              <img src="/main-logo.svg" alt="Main Logo" class="w-7 h-7" />
               <div
                 class="bg-gray-200 rounded-t-[13px] rounded-br-[13px] h-8 w-16 shadow animate-pulse flex items-center justify-center"
               >
@@ -125,7 +126,7 @@ const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };
 
-const isChatOpen = ref(true);
+const isChatOpen = ref(false);
 const isExpanded = ref(false);
 const messages = ref([
   {
