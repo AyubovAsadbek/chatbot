@@ -128,17 +128,32 @@
             <form @submit.prevent="sendMessage" class="flex space-x-2">
               <input
                 v-model="userInput"
+                :readonly="isLoading"
                 type="text"
-                placeholder="Type your message..."
+                :placeholder="
+                  isLoading ? 'Iltimos kuting...' : 'Xabaringizni yozing...'
+                "
                 class="flex-1 p-2 text-sm border rounded-lg transition-300 outline-none focus:outline-blue-500"
               />
-              <button
-                type="submit"
-                class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-300"
-                :disabled="isLoading"
-              >
-                Send
-              </button>
+              <transition name="fade" mode="out-in">
+                <button
+                  v-if="userInput.trim().length > 0"
+                  key="send"
+                  type="submit"
+                  class="py-2 px-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-300"
+                  :disabled="isLoading"
+                >
+                  <SendHorizonal class="w-5 h-5" />
+                </button>
+                <button
+                  v-else
+                  key="mic"
+                  type="button"
+                  class="py-2 px-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-300"
+                >
+                  <Mic class="w-5 h-5" />
+                </button>
+              </transition>
             </form>
           </div>
         </div>
@@ -150,7 +165,14 @@
 
 <script setup>
 import { ref, onMounted, nextTick } from "vue";
-import { X, Expand, Volume2, Loader } from "lucide-vue-next";
+import {
+  X,
+  Expand,
+  Volume2,
+  Loader,
+  Mic,
+  SendHorizonal,
+} from "lucide-vue-next";
 const { isMobile } = useDevice();
 
 const toggleExpand = () => {
@@ -294,3 +316,15 @@ onMounted(() => {
   scrollToBottom();
 });
 </script>
+
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
