@@ -8,7 +8,6 @@
       class="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-300"
       :class="{ 'rotate-180': isChatOpen }"
     >
-      <!-- <MessageSquare  class="w-6 h-6" /> -->
       <img class="w-6 h-6" v-if="!isChatOpen" src="/logo.svg" alt="" />
       <X v-else class="w-6 h-6" />
     </button>
@@ -68,6 +67,7 @@
               v-for="message in messages"
               :key="message.id"
               class="flex items-end gap-1"
+              :class="[message.isUser ? 'justify-end' : 'justify-start']"
             >
               <img
                 v-if="!message.isUser"
@@ -75,16 +75,44 @@
                 alt="Main Logo"
                 class="w-7 h-7"
               />
+              <button
+                v-if="message.isUser"
+                @click="textToSpeech(message.content, message.id)"
+                class="p-1 bg-blue-500 rounded-md hover:bg-blue-600 transition-200"
+              >
+                <Volume2
+                  v-if="!isLoadingAudio[message.id]"
+                  class="text-white w-[18px] h-[18px]"
+                />
+                <Loader
+                  v-else
+                  class="text-white w-[18px] h-[18px] animate-spin"
+                />
+              </button>
               <div
                 :class="[
                   'max-w-[70%] break-word-own overflow-hidden whitespace-pre-wrap px-2 py-1',
                   message.isUser
-                    ? 'bg-[#1F93FF] text-white ml-auto rounded-t-[13px] rounded-bl-[13px]'
+                    ? 'bg-[#1F93FF] text-white rounded-t-[13px] rounded-bl-[13px]'
                     : 'bg-gray-100 rounded-t-[13px] rounded-br-[13px]',
                 ]"
               >
                 <span class="text-sm">{{ message.content }}</span>
               </div>
+              <button
+                @click="textToSpeech(message.content, message.id)"
+                v-if="!message.isUser"
+                class="p-1 bg-blue-500 rounded-md hover:bg-blue-600 transition-200"
+              >
+                <Volume2
+                  v-if="!isLoadingAudio[message.id]"
+                  class="text-white w-[18px] h-[18px]"
+                />
+                <Loader
+                  v-else
+                  class="text-white w-[18px] h-[18px] animate-spin"
+                />
+              </button>
             </div>
             <div v-if="isLoading" class="flex items-end gap-1">
               <img src="/main-logo.svg" alt="Main Logo" class="w-7 h-7" />
@@ -115,29 +143,33 @@
         </div>
       </div>
     </transition>
+    <audio ref="audioPlayer" class="hidden" />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, nextTick } from "vue";
-import { MessageSquare, X, Expand } from "lucide-vue-next";
+import { X, Expand, Volume2, Loader } from "lucide-vue-next";
 
 const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };
 
-const isChatOpen = ref(false);
+const isChatOpen = ref(true);
 const isExpanded = ref(false);
+const audio = ref(null);
+const audioPlayer = ref(null);
 const messages = ref([
   {
     id: 1,
-    content: "Hello! How can I assist you today?",
+    content: "Assalomu alaykum! Bugun sizga qanday yordam berishim mumkin?",
     isUser: false,
   },
 ]);
 const userInput = ref("");
 const isLoading = ref(false);
 const messageContainer = ref(null);
+const isLoadingAudio = ref({});
 
 const toggleChat = () => {
   isChatOpen.value = !isChatOpen.value;
@@ -148,6 +180,46 @@ const scrollToBottom = () => {
     nextTick(() => {
       messageContainer.value.scrollTop = messageContainer.value.scrollHeight;
     });
+  }
+};
+
+const textToSpeech = async (text, messageId) => {
+  isLoadingAudio.value[messageId] = true;
+  try {
+    const response = await fetch("https://back.aisha.group/api/v1/tts/post/", {
+      method: "POST",
+      body: JSON.stringify({
+        transcript: text,
+        language: "uz",
+        model: "jaxongir",
+      }),
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": "kc4MV8lh.WHwNzvE3s5bj9ssEY584Lo3bI3XQwYCc",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch audio");
+    }
+
+    const data = await response.json();
+    if (!data.audio_path) {
+      throw new Error("No audio path received");
+    }
+
+    const audioUrl = `https://back.aisha.group/${data.audio_path}`;
+
+    if (audioPlayer.value) {
+      audioPlayer.value.src = audioUrl;
+      await audioPlayer.value.play();
+    } else {
+      console.error("Audio player not found");
+    }
+  } catch (error) {
+    console.error("Error in text-to-speech:", error);
+  } finally {
+    isLoadingAudio.value[messageId] = false;
   }
 };
 
@@ -218,24 +290,20 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Target the entire scrollbar */
 ::-webkit-scrollbar {
-  width: 4px; /* Width of the scrollbar */
-  height: 12px; /* Height of the scrollbar for horizontal scroll */
+  width: 4px;
+  height: 12px;
 }
 
-/* Handle (scroll thumb) */
 ::-webkit-scrollbar-thumb {
-  background: #d0dbf0; /* Color of the scrollbar handle */
-  border-radius: 10px; /* Round corners */
+  background: #d0dbf0;
+  border-radius: 10px;
 }
 
-/* Scrollbar track (background) */
 ::-webkit-scrollbar-track {
   border-radius: 10px;
 }
 
-/* HTML: <div class="loader"></div> */
 .loader {
   width: 30px;
   aspect-ratio: 4;
@@ -281,6 +349,6 @@ onMounted(() => {
 }
 
 .break-word-own {
-  word-break: break-all;
+  word-break: break-word;
 }
 </style>
