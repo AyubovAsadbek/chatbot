@@ -4,7 +4,7 @@
       class="absolute -z-10 bg-[#D6EDFF] animate-grow-glow w-12 h-12 border rounded-full"
     ></div>
     <button
-      @click="toggleChat"
+      @click="$device.isMobile ? toggleExpand() : toggleChat()"
       class="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-300"
       :class="{ 'rotate-180': isChatOpen }"
     >
@@ -22,7 +22,7 @@
     >
       <div
         v-if="isChatOpen"
-        class="border bottom-16 right-0 w-[400px] h-[500px] bg-white rounded-[15px] shadow-xl overflow-hidden"
+        class="border bottom-16 right-0 w-[400px] h-[500px] bg-white sm:rounded-[15px] shadow-xl overflow-hidden"
         :class="
           isExpanded
             ? 'fixed top-0 left-0 w-full h-full transition-200'
@@ -150,12 +150,15 @@
 <script setup>
 import { ref, onMounted, nextTick } from "vue";
 import { X, Expand, Volume2, Loader } from "lucide-vue-next";
+const { isMobile } = useDevice();
 
 const toggleExpand = () => {
+  isChatOpen.value = !isChatOpen.value;
   isExpanded.value = !isExpanded.value;
+  console.log("Expand");
 };
 
-const isChatOpen = ref(true);
+const isChatOpen = ref(false);
 const isExpanded = ref(false);
 const audio = ref(null);
 const audioPlayer = ref(null);
@@ -173,6 +176,7 @@ const isLoadingAudio = ref({});
 
 const toggleChat = () => {
   isChatOpen.value = !isChatOpen.value;
+  console.log("Chat");
 };
 
 const scrollToBottom = () => {
