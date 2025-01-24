@@ -3,6 +3,7 @@
     <div
       class="absolute -z-10 bg-[#D6EDFF] animate-grow-glow w-12 h-12 border rounded-full"
     ></div>
+
     <button
       @click="$device.isMobile ? toggleExpand() : toggleChat()"
       class="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-300"
@@ -153,9 +154,10 @@ import { X, Expand, Volume2, Loader } from "lucide-vue-next";
 const { isMobile } = useDevice();
 
 const toggleExpand = () => {
-  isChatOpen.value = !isChatOpen.value;
+  if (isMobile) {
+    isChatOpen.value = !isChatOpen.value;
+  }
   isExpanded.value = !isExpanded.value;
-  console.log("Expand");
 };
 
 const isChatOpen = ref(false);
@@ -292,67 +294,3 @@ onMounted(() => {
   scrollToBottom();
 });
 </script>
-
-<style scoped>
-::-webkit-scrollbar {
-  width: 4px;
-  height: 12px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #d0dbf0;
-  border-radius: 10px;
-}
-
-::-webkit-scrollbar-track {
-  border-radius: 10px;
-}
-
-.loader {
-  width: 30px;
-  aspect-ratio: 4;
-  --_g: no-repeat radial-gradient(circle closest-side, #967676 90%, #0000);
-  background: var(--_g) 0% 50%, var(--_g) 50% 50%, var(--_g) 100% 50%;
-  background-size: calc(100% / 3) 100%;
-  animation: l7 1s infinite linear;
-}
-@keyframes l7 {
-  33% {
-    background-size: calc(100% / 3) 0%, calc(100% / 3) 100%, calc(100% / 3) 100%;
-  }
-  50% {
-    background-size: calc(100% / 3) 100%, calc(100% / 3) 0%, calc(100% / 3) 100%;
-  }
-  66% {
-    background-size: calc(100% / 3) 100%, calc(100% / 3) 100%, calc(100% / 3) 0%;
-  }
-}
-
-@keyframes grow-glow {
-  0% {
-    transform: scale(1);
-    opacity: 0.75;
-  }
-  25% {
-    transform: scale(2);
-    opacity: 0.5;
-  }
-  50% {
-    transform: scale(3);
-    opacity: 0.25;
-  }
-  100% {
-    transform: scale(4);
-    opacity: 0;
-  }
-}
-
-.animate-grow-glow {
-  animation: grow-glow 2.5s infinite;
-  animation-timing-function: linear;
-}
-
-.break-word-own {
-  word-break: break-word;
-}
-</style>
