@@ -35,7 +35,11 @@
               <h2 class="text-lg font-semibold">Aisha AI</h2>
               <p class="text-sm">( Chatbot test rejimida ishlamoqda )</p>
             </div>
-            <button class="flex items-center" @click="toggleExpand">
+            <button
+              v-if="!fromTelegram"
+              class="flex items-center"
+              @click="toggleExpand"
+            >
               <Expand v-if="!isExpanded" />
               <svg
                 v-else
@@ -60,9 +64,7 @@
             ref="messageContainer"
             class="flex-1 overflow-y-auto p-2 space-y-2"
           >
-            <h1 class="text-center text-sm">
-              {{ new Date().toLocaleString().slice(0, 10) }}
-            </h1>
+            <h1 class="text-center text-sm">{{ date }}</h1>
             <div
               v-for="message in messages"
               :key="message.id"
@@ -174,6 +176,15 @@ import {
 } from "lucide-vue-next";
 const { isMobile } = useDevice();
 const route = useRoute();
+const date = computed(() => {
+  return (
+    String(new Date().getDate()).padStart(2, "0") +
+    "." +
+    String(new Date().getMonth() + 1).padStart(2, "0") +
+    "." +
+    new Date().getFullYear()
+  );
+});
 const fromTelegram = computed(() => {
   return route.query.fromTelegram ? true : false;
 });
@@ -185,7 +196,7 @@ const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };
 
-const isChatOpen = ref(fromTelegram.value ? true : false);
+const isChatOpen = ref(fromTelegram.value ? true : true);
 const isExpanded = ref(false);
 const audio = ref(null);
 const audioPlayer = ref(null);
@@ -203,7 +214,6 @@ const isLoadingAudio = ref({});
 
 const toggleChat = () => {
   isChatOpen.value = !isChatOpen.value;
-  console.log("Chat");
 };
 
 const scrollToBottom = () => {
