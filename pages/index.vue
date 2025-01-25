@@ -3,6 +3,7 @@
     <div
       class="absolute -z-10 bg-[#D6EDFF] animate-grow-glow w-12 h-12 border rounded-full"
     ></div>
+    {{ $device.isMobile }}
     <button
       @click="$device.isMobile ? toggleExpand() : toggleChat()"
       class="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-300"
@@ -196,7 +197,7 @@ const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };
 
-const isChatOpen = ref(fromTelegram.value ? true : true);
+const isChatOpen = ref(fromTelegram.value ? true : false);
 const isExpanded = ref(false);
 const audio = ref(null);
 const audioPlayer = ref(null);
