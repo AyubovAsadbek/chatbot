@@ -3,7 +3,6 @@
     <div
       class="absolute -z-10 bg-[#D6EDFF] animate-grow-glow w-12 h-12 border rounded-full"
     ></div>
-
     <button
       @click="$device.isMobile ? toggleExpand() : toggleChat()"
       class="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-all duration-300"
@@ -23,9 +22,9 @@
     >
       <div
         v-if="isChatOpen"
-        class="border bottom-16 right-0 w-[400px] h-[500px] bg-white sm:rounded-[15px] shadow-xl overflow-hidden"
+        class="bottom-16 right-0 w-[400px] h-[500px] bg-white sm:rounded-[15px] shadow-xl overflow-hidden"
         :class="
-          isExpanded
+          isExpanded || fromTelegram
             ? 'fixed top-0 left-0 w-full h-full transition-200'
             : 'absolute'
         "
@@ -174,6 +173,10 @@ import {
   SendHorizonal,
 } from "lucide-vue-next";
 const { isMobile } = useDevice();
+const route = useRoute();
+const fromTelegram = computed(() => {
+  return route.query.fromTelegram ? true : false;
+});
 
 const toggleExpand = () => {
   if (isMobile) {
@@ -182,7 +185,7 @@ const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };
 
-const isChatOpen = ref(false);
+const isChatOpen = ref(fromTelegram.value ? true : false);
 const isExpanded = ref(false);
 const audio = ref(null);
 const audioPlayer = ref(null);
