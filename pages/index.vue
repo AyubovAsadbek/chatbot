@@ -146,14 +146,51 @@
                 >
                   <SendHorizonal class="w-5 h-5" />
                 </button>
-                <button
-                  v-else
-                  key="mic"
-                  type="button"
-                  class="py-2 px-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-300"
-                >
-                  <Mic class="w-5 h-5" />
-                </button>
+                <div v-else>
+                  <!-- <button
+                    v-if="!isRecording"
+                    @click="startRecording"
+                    key="mic"
+                    type="button"
+                    class="py-2 px-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-300"
+                    :disabled="isRecording"
+                  >
+                    <Mic class="w-5 h-5" />
+                  </button>
+                  <button
+                    v-if="isRecording"
+                    @click="stopRecording"
+                    key="stop"
+                    type="button"
+                    class="py-2 px-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-300"
+                    :disabled="!isRecording"
+                  >
+                    <Pause class="w-5 h-5" />
+                  </button> -->
+                  <button
+                    v-if="!isRecording"
+                    @click="startRecording"
+                    key="mic"
+                    type="button"
+                    class="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-300"
+                    :disabled="isRecording"
+                  >
+                    <Mic class="w-5 h-5" />
+                  </button>
+                  <button
+                    v-if="isRecording"
+                    @click="stopRecording"
+                    key="stop"
+                    type="button"
+                    class="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-300 relative"
+                    :disabled="!isRecording"
+                  >
+                    <Pause class="w-5 h-5" />
+                    <span
+                      class="absolute inset-0 rounded-full animate-pulse-recording"
+                    ></span>
+                  </button>
+                </div>
               </transition>
             </form>
           </div>
@@ -165,7 +202,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from "vue";
+import { ref, computed, onMounted, nextTick } from "vue";
 import {
   X,
   Expand,
@@ -173,9 +210,12 @@ import {
   Loader,
   Mic,
   SendHorizonal,
+  Pause,
 } from "lucide-vue-next";
 const { isMobile } = useDevice();
 const route = useRoute();
+
+// Computed Properties
 const date = computed(() => {
   return (
     String(new Date().getDate()).padStart(2, "0") +
@@ -189,16 +229,9 @@ const fromTelegram = computed(() => {
   return route.query.fromTelegram ? true : false;
 });
 
-const toggleExpand = () => {
-  if (isMobile) {
-    isChatOpen.value = !isChatOpen.value;
-  }
-  isExpanded.value = !isExpanded.value;
-};
-
+// Variables
 const isChatOpen = ref(fromTelegram.value ? true : false);
 const isExpanded = ref(false);
-const audio = ref(null);
 const audioPlayer = ref(null);
 const messages = ref([
   {
@@ -211,9 +244,50 @@ const userInput = ref("");
 const isLoading = ref(false);
 const messageContainer = ref(null);
 const isLoadingAudio = ref({});
+const isRecording = ref(false);
+const mediaRecorder = ref(null);
+const audioChunks = ref([]);
+
+// Functions
+const startRecording = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    mediaRecorder.value = new MediaRecorder(stream);
+
+    mediaRecorder.value.ondataavailable = (event) => {
+      audioChunks.value.push(event.data);
+    };
+
+    mediaRecorder.value.onstop = () => {
+      const audioBlob = new Blob(audioChunks.value, { type: "audio/wav" });
+      console.log("Audio Blob:", audioBlob);
+      speechToText(audioBlob);
+      audioChunks.value = [];
+    };
+
+    mediaRecorder.value.start();
+    isRecording.value = true;
+  } catch (error) {
+    console.error("Error accessing microphone", error);
+  }
+};
+
+const stopRecording = () => {
+  if (mediaRecorder.value && isRecording.value) {
+    mediaRecorder.value.stop();
+    isRecording.value = false;
+  }
+};
 
 const toggleChat = () => {
   isChatOpen.value = !isChatOpen.value;
+};
+
+const toggleExpand = () => {
+  if (isMobile) {
+    isChatOpen.value = !isChatOpen.value;
+  }
+  isExpanded.value = !isExpanded.value;
 };
 
 const scrollToBottom = () => {
@@ -224,6 +298,7 @@ const scrollToBottom = () => {
   }
 };
 
+// Requests
 const textToSpeech = async (text, messageId) => {
   isLoadingAudio.value[messageId] = true;
   try {
@@ -261,6 +336,34 @@ const textToSpeech = async (text, messageId) => {
     console.error("Error in text-to-speech:", error);
   } finally {
     isLoadingAudio.value[messageId] = false;
+  }
+};
+
+const speechToText = async (audioBlob) => {
+  const formData = new FormData();
+  formData.append("audio", audioBlob, "recorded_audio.wav");
+  formData.append("has_offsets", "false");
+  formData.append("has_diarization", "false");
+  formData.append("language", "uz");
+
+  try {
+    const response = await fetch("https://back.aisha.group/api/v1/stt/post/", {
+      method: "POST",
+      body: formData,
+      headers: {
+        "x-api-key": "kc4MV8lh.WHwNzvE3s5bj9ssEY584Lo3bI3XQwYCc",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch speech");
+    }
+
+    const data = await response.json();
+    userInput.value = data.transcript;
+    sendMessage();
+  } catch (error) {
+    console.error("Error in speech-to-text:", error);
   }
 };
 
@@ -339,5 +442,21 @@ onMounted(() => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+@keyframes pulse-recording {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+.animate-pulse-recording {
+  animation: pulse-recording 1s infinite;
 }
 </style>
