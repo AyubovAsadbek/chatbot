@@ -22,15 +22,17 @@
     >
       <div
         v-if="isChatOpen"
-        class="bottom-16 right-0 w-[400px] h-[500px] bg-white sm:rounded-[15px] shadow-xl overflow-hidden"
+        class="bottom-16 right-0 w-[400px] h-[500px] bg-white shadow-xl overflow-hidden"
         :class="
           isExpanded || fromTelegram
             ? 'fixed top-0 left-0 w-full h-full transition-200'
-            : 'absolute'
+            : 'absolute sm:rounded-[15px]'
         "
       >
         <div class="flex flex-col h-full">
-          <div class="bg-blue-500 text-white p-3 flex justify-between">
+          <div
+            class="relative z-20 bg-blue-500 text-white p-3 flex justify-between"
+          >
             <div>
               <h2 class="text-lg font-semibold">Aisha AI</h2>
               <p class="text-sm">( Chatbot test rejimida ishlamoqda )</p>
@@ -60,6 +62,12 @@
               </svg>
             </button>
           </div>
+          <span
+            class="py-1 px-2 text-white rounded-xl text-sm bg-red-500 absolute left-1/2 transform -translate-x-1/2 whitespace-nowrap z-10 transition-400"
+            :class="[isAudioEmpty ? 'top-20' : 'top-0']"
+          >
+            Xabarni tushunib bo'lmadi. Qayta yozib yuboring!
+          </span>
           <div
             ref="messageContainer"
             class="flex-1 overflow-y-auto p-2 space-y-2"
@@ -126,7 +134,7 @@
             </div>
           </div>
           <div class="p-4 bg-white border-t">
-            <form @submit.prevent="sendMessage" class="flex space-x-2">
+            <form @submit.prevent="sendMessage" class="flex space-x-3">
               <input
                 v-model="userInput"
                 :readonly="isLoading"
@@ -141,32 +149,12 @@
                   v-if="userInput.trim().length > 0"
                   key="send"
                   type="submit"
-                  class="py-2 px-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-300"
+                  class="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-300"
                   :disabled="isLoading"
                 >
                   <SendHorizonal class="w-5 h-5" />
                 </button>
                 <div v-else>
-                  <!-- <button
-                    v-if="!isRecording"
-                    @click="startRecording"
-                    key="mic"
-                    type="button"
-                    class="py-2 px-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-300"
-                    :disabled="isRecording"
-                  >
-                    <Mic class="w-5 h-5" />
-                  </button>
-                  <button
-                    v-if="isRecording"
-                    @click="stopRecording"
-                    key="stop"
-                    type="button"
-                    class="py-2 px-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-300"
-                    :disabled="!isRecording"
-                  >
-                    <Pause class="w-5 h-5" />
-                  </button> -->
                   <button
                     v-if="!isRecording"
                     @click="startRecording"
@@ -232,6 +220,7 @@ const fromTelegram = computed(() => {
 // Variables
 const isChatOpen = ref(fromTelegram.value ? true : false);
 const isExpanded = ref(false);
+const isAudioEmpty = ref(false);
 const audioPlayer = ref(null);
 const messages = ref([
   {
@@ -249,6 +238,20 @@ const mediaRecorder = ref(null);
 const audioChunks = ref([]);
 
 // Functions
+// if (isAudioEmpty.value) {
+//   setTimeout(() => {
+//     isAudioEmpty.value = false;
+//   }, 2000);
+// }
+
+watch(isAudioEmpty, (newValue) => {
+  if (newValue) {
+    setTimeout(() => {
+      isAudioEmpty.value = false;
+    }, 3000);
+  }
+});
+
 const startRecording = async () => {
   try {
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -340,6 +343,7 @@ const textToSpeech = async (text, messageId) => {
 };
 
 const speechToText = async (audioBlob) => {
+  isLoading.value = true;
   const formData = new FormData();
   formData.append("audio", audioBlob, "recorded_audio.wav");
   formData.append("has_offsets", "false");
@@ -364,6 +368,9 @@ const speechToText = async (audioBlob) => {
     sendMessage();
   } catch (error) {
     console.error("Error in speech-to-text:", error);
+    isAudioEmpty.value = true;
+  } finally {
+    isLoading.value = false;
   }
 };
 
@@ -432,31 +439,3 @@ onMounted(() => {
   scrollToBottom();
 });
 </script>
-
-<style>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.2s ease;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-@keyframes pulse-recording {
-  0% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
-  }
-}
-
-.animate-pulse-recording {
-  animation: pulse-recording 1s infinite;
-}
-</style>

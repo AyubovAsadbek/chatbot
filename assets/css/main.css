@@ -16,6 +16,9 @@ body {
 }
 
 @layer utilities {
+  .transition-400 {
+    transition: all 400ms ease-in-out;
+  }
   .transition-300 {
     transition: all 300ms ease-in-out;
   }
@@ -87,4 +90,29 @@ body {
 
 .break-word-own {
   word-break: break-word;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+@keyframes pulse-recording {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
+
+.animate-pulse-recording {
+  animation: pulse-recording 1s infinite;
 }
