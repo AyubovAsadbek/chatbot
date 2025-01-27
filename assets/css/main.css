@@ -84,7 +84,7 @@ body {
 }
 
 .animate-grow-glow {
-  animation: grow-glow 2.5s infinite;
+  animation: grow-glow 2s infinite;
   animation-timing-function: linear;
 }
 
