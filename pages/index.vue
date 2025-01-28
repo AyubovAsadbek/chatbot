@@ -145,18 +145,18 @@
                 class="flex-1 p-2 text-sm border rounded-lg transition-300 outline-none focus:outline-blue-500"
               />
               <transition name="fade" mode="out-in">
-                <button
-                  v-if="userInput.trim().length > 0"
-                  key="send"
-                  type="submit"
-                  class="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-300"
-                  :disabled="isLoading"
-                >
-                  <SendHorizonal class="w-5 h-5" />
-                </button>
-                <div v-else>
+                <div>
                   <button
-                    v-if="!isRecording"
+                    v-if="userInput.trim().length > 0"
+                    key="send"
+                    type="submit"
+                    class="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-300"
+                    :disabled="isLoading"
+                  >
+                    <SendHorizonal class="w-5 h-5" />
+                  </button>
+                  <button
+                    v-else-if="!isRecording"
                     @click="startRecording"
                     key="mic"
                     type="button"
@@ -166,7 +166,7 @@
                     <Mic class="w-5 h-5" />
                   </button>
                   <button
-                    v-if="isRecording"
+                    v-else
                     @click="stopRecording"
                     key="stop"
                     type="button"
@@ -177,6 +177,11 @@
                     <span
                       class="absolute inset-0 rounded-full animate-pulse-recording"
                     ></span>
+                    <span
+                      class="w-14 absolute -top-8 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white py-1 rounded text-xs"
+                    >
+                      {{ formatTime(recordingTime) }}
+                    </span>
                   </button>
                 </div>
               </transition>
@@ -190,7 +195,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from "vue";
+import { ref, computed, onMounted, nextTick, watch } from "vue";
 import {
   X,
   Expand,
@@ -236,6 +241,8 @@ const isLoadingAudio = ref({});
 const isRecording = ref(false);
 const mediaRecorder = ref(null);
 const audioChunks = ref([]);
+const recordingTime = ref(0);
+let recordingInterval;
 
 // Functions
 
@@ -258,13 +265,17 @@ const startRecording = async () => {
 
     mediaRecorder.value.onstop = () => {
       const audioBlob = new Blob(audioChunks.value, { type: "audio/wav" });
-      console.log("Audio Blob:", audioBlob);
       speechToText(audioBlob);
+      scrollToBottom();
       audioChunks.value = [];
+      recordingTime.value = 0;
     };
 
     mediaRecorder.value.start();
     isRecording.value = true;
+    recordingInterval = setInterval(() => {
+      recordingTime.value += 0.1;
+    }, 100);
   } catch (error) {
     console.error("Error accessing microphone", error);
   }
@@ -274,7 +285,17 @@ const stopRecording = () => {
   if (mediaRecorder.value && isRecording.value) {
     mediaRecorder.value.stop();
     isRecording.value = false;
+    clearInterval(recordingInterval);
   }
+};
+
+const formatTime = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  const tenths = Math.floor((seconds % 1) * 10);
+  return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
+    .toString()
+    .padStart(2, "0")},${tenths}`;
 };
 
 const toggleChat = () => {
