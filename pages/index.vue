@@ -145,45 +145,43 @@
                 class="flex-1 p-2 text-sm border rounded-lg transition-300 outline-none focus:outline-blue-500"
               />
               <transition name="fade" mode="out-in">
-                <div>
-                  <button
-                    v-if="userInput.trim().length > 0"
-                    key="send"
-                    type="submit"
-                    class="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-300"
-                    :disabled="isLoading"
+                <button
+                  v-if="userInput.trim().length > 0"
+                  key="send"
+                  type="submit"
+                  class="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-300"
+                  :disabled="isLoading"
+                >
+                  <SendHorizonal class="w-5 h-5" />
+                </button>
+                <button
+                  v-else-if="!isRecording"
+                  @click="startRecording"
+                  key="mic"
+                  type="button"
+                  class="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-300"
+                  :disabled="isRecording"
+                >
+                  <Mic class="w-5 h-5" />
+                </button>
+                <button
+                  v-else
+                  @click="stopRecording"
+                  key="stop"
+                  type="button"
+                  class="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-300 relative"
+                  :disabled="!isRecording"
+                >
+                  <Pause class="w-5 h-5" />
+                  <span
+                    class="absolute inset-0 rounded-full animate-pulse-recording"
+                  ></span>
+                  <span
+                    class="w-14 absolute -top-8 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white py-1 rounded text-xs"
                   >
-                    <SendHorizonal class="w-5 h-5" />
-                  </button>
-                  <button
-                    v-else-if="!isRecording"
-                    @click="startRecording"
-                    key="mic"
-                    type="button"
-                    class="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-300"
-                    :disabled="isRecording"
-                  >
-                    <Mic class="w-5 h-5" />
-                  </button>
-                  <button
-                    v-else
-                    @click="stopRecording"
-                    key="stop"
-                    type="button"
-                    class="p-3 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-300 relative"
-                    :disabled="!isRecording"
-                  >
-                    <Pause class="w-5 h-5" />
-                    <span
-                      class="absolute inset-0 rounded-full animate-pulse-recording"
-                    ></span>
-                    <span
-                      class="w-14 absolute -top-8 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white py-1 rounded text-xs"
-                    >
-                      {{ formatTime(recordingTime) }}
-                    </span>
-                  </button>
-                </div>
+                    {{ formatTime(recordingTime) }}
+                  </span>
+                </button>
               </transition>
             </form>
           </div>
