@@ -238,11 +238,6 @@ const mediaRecorder = ref(null);
 const audioChunks = ref([]);
 
 // Functions
-// if (isAudioEmpty.value) {
-//   setTimeout(() => {
-//     isAudioEmpty.value = false;
-//   }, 2000);
-// }
 
 watch(isAudioEmpty, (newValue) => {
   if (newValue) {
@@ -351,13 +346,16 @@ const speechToText = async (audioBlob) => {
   formData.append("language", "uz");
 
   try {
-    const response = await fetch("https://back.aisha.group/api/v1/stt/post/", {
-      method: "POST",
-      body: formData,
-      headers: {
-        "x-api-key": "kc4MV8lh.WHwNzvE3s5bj9ssEY584Lo3bI3XQwYCc",
-      },
-    });
+    const response = await fetch(
+      "https://2679-194-93-25-162.ngrok-free.app/api/v1/stt/post/",
+      {
+        method: "POST",
+        body: formData,
+        headers: {
+          "x-api-key": "iSAdZlop.T6Iv3QPRl96ZnAe4JgWmZgku5X61hI4K",
+        },
+      }
+    );
 
     if (!response.ok) {
       throw new Error("Failed to fetch speech");
