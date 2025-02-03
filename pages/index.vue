@@ -365,16 +365,13 @@ const speechToText = async (audioBlob) => {
   formData.append("language", "uz");
 
   try {
-    const response = await fetch(
-      "https://2679-194-93-25-162.ngrok-free.app/api/v1/stt/post/",
-      {
-        method: "POST",
-        body: formData,
-        headers: {
-          "x-api-key": "iSAdZlop.T6Iv3QPRl96ZnAe4JgWmZgku5X61hI4K",
-        },
-      }
-    );
+    const response = await fetch("https://back.aisha.group/api/v1/stt/post/", {
+      method: "POST",
+      body: formData,
+      headers: {
+        "x-api-key": "iSAdZlop.T6Iv3QPRl96ZnAe4JgWmZgku5X61hI4K",
+      },
+    });
 
     if (!response.ok) {
       throw new Error("Failed to fetch speech");
